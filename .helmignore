@@ -5,3 +5,4 @@ examples
 .gitignore
 README.md
 test.y*ml
+charts
