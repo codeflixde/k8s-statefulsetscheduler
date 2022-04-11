@@ -1,7 +1,0 @@
-venv
-requirements.txt
-examples
-.idea
-.gitignore
-README.md
-test.y*ml
