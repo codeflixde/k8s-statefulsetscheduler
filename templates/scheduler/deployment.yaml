@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-statefulset-scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: statefulset-scheduler
+  template:
+    metadata:
+      labels:
+        app: statefulset-scheduler
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/scheduler/config.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}-scheduler-service-account
+      containers:
+        - name: scheduler
+          imagePullPolicy: Always
+          image: resimon/kubernetes-api-client:python3-23.3.0
+          command: ["python3"]
+          args: ["/app/statefulsetscheduler.py"]
+          {{- with .Values.scheduler.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: script
+              mountPath: /app
+      tolerations:
+        - effect: NoSchedule
+          key: node.kubernetes.io/not-ready
+        - effect: NoSchedule
+          key: node.cloudprovider.kubernetes.io/uninitialized
+          operator: Equal
+          value: "true"
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - effect: NoExecute
+          key: node-role.kubernetes.io/etcd
+          operator: Exists
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+          operator: Exists
+        - effect: NoExecute
+          key: node.kubernetes.io/not-ready
+          operator: Exists
+          tolerationSeconds: 300
+        - effect: NoExecute
+          key: node.kubernetes.io/unreachable
+          operator: Exists
+          tolerationSeconds: 300
+      volumes:
+        - name: script
+          configMap:
+            defaultMode: 420
+            name: {{ .Release.Name }}-statefulset-scheduler-config
