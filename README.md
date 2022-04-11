@@ -12,7 +12,7 @@ With helm
 ```
 helm repo add codeflixde-statefulsetscheduler https://codeflixde.github.io/k8s-statefulsetscheduler/
 
-helm upgrade --install -n <namespace> --create-namespace <name> cf-statefulsetscheduler/statefulsetscheduler
+helm upgrade --install -n <namespace> --create-namespace <name> codeflixde-statefulsetscheduler/statefulsetscheduler
 ```
 # Usage
 
